@@ -11,6 +11,8 @@ enum SubGhzSettingIndex {
     SubGhzSettingIndexIgnoreStarline,
     SubGhzSettingIndexIgnoreCars,
     SubGhzSettingIndexIgnoreMagellan,
+    SubGhzSettingIndexIgnoreWeather,
+    SubGhzSettingIndexIgnoreTPMS,
     SubGhzSettingIndexIgnorePrinceton,
     SubGhzSettingIndexSound,
     SubGhzSettingIndexResetToDefault,
@@ -155,6 +157,8 @@ static void subghz_scene_receiver_config_set_frequency(VariableItem* item) {
             subghz->txrx,
             furi_string_get_cstr(preset.name),
             frequency,
+            0,
+            0,
             preset.data,
             preset.data_size);
 
@@ -181,6 +185,8 @@ static void subghz_scene_receiver_config_set_preset(VariableItem* item) {
         subghz->txrx,
         preset_name,
         preset.frequency,
+        0,
+        0,
         subghz_setting_get_preset_data(setting, index),
         subghz_setting_get_preset_data_size(setting, index));
     subghz->last_settings->preset_index = index;
@@ -213,6 +219,8 @@ static void subghz_scene_receiver_config_set_hopping_running(VariableItem* item)
             subghz->txrx,
             furi_string_get_cstr(preset.name),
             frequency,
+            0,
+            0,
             preset.data,
             preset.data_size);
         variable_item_set_current_value_index(
@@ -272,6 +280,13 @@ static void subghz_scene_receiver_config_set_auto_alarms(VariableItem* item) {
 
 static void subghz_scene_receiver_config_set_magellan(VariableItem* item) {
     subghz_scene_receiver_config_set_ignore_filter(item, SubGhzProtocolFlag_Magellan);
+}
+
+static void subghz_scene_receiver_config_set_weather(VariableItem* item) {
+    subghz_scene_receiver_config_set_ignore_filter(item, SubGhzProtocolFlag_Weather);
+}
+static void subghz_scene_receiver_config_set_tpms(VariableItem* item) {
+    subghz_scene_receiver_config_set_ignore_filter(item, SubGhzProtocolFlag_TPMS);
 }
 
 static void subghz_scene_receiver_config_set_princeton(VariableItem* item) {
@@ -430,6 +445,30 @@ void subghz_scene_receiver_config_on_enter(void* context) {
 
         value_index = subghz_scene_receiver_config_ignore_filter_get_index(
             subghz->ignore_filter, SubGhzProtocolFlag_Magellan);
+        variable_item_set_current_value_index(item, value_index);
+        variable_item_set_current_value_text(item, combobox_text[value_index]);
+
+        item = variable_item_list_add(
+            subghz->variable_item_list,
+            "Ignore Weather:",
+            COMBO_BOX_COUNT,
+            subghz_scene_receiver_config_set_weather,
+            subghz);
+
+        value_index = subghz_scene_receiver_config_ignore_filter_get_index(
+            subghz->ignore_filter, SubGhzProtocolFlag_Weather);
+        variable_item_set_current_value_index(item, value_index);
+        variable_item_set_current_value_text(item, combobox_text[value_index]);
+
+        item = variable_item_list_add(
+            subghz->variable_item_list,
+            "Ignore TPMS:",
+            COMBO_BOX_COUNT,
+            subghz_scene_receiver_config_set_tpms,
+            subghz);
+
+        value_index = subghz_scene_receiver_config_ignore_filter_get_index(
+            subghz->ignore_filter, SubGhzProtocolFlag_TPMS);
         variable_item_set_current_value_index(item, value_index);
         variable_item_set_current_value_text(item, combobox_text[value_index]);
 
